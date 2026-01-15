@@ -1,0 +1,16 @@
+{
+  "short_name": "Nursing",
+  "name": "Recalde Nursing",
+  "icons": [
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#2563eb",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#2563eb"
+}
