@@ -3,14 +3,22 @@
   "name": "Recalde Nursing",
   "icons": [
     {
-      "src": "/icons/apple-touch-icon.png",
+      "src": "/apple-touch-icon.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
   "background_color": "#2563eb",
   "display": "standalone",
   "scope": "/",
-  "theme_color": "#2563eb"
+  "theme_color": "#2563eb",
+  "orientation": "portrait"
 }

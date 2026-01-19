@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,14 +9,14 @@
     <meta name="theme-color" content="#2563eb">
     <meta name="description" content="Portal de Enfermería Domiciliaria">
     <title>Recalde Nursing</title>
-    
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    
+
     <script type="importmap">
     {
       "imports": {
@@ -32,30 +33,74 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        * { -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: 'Inter', sans-serif; 
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             touch-action: manipulation;
         }
-        .overflow-y-auto::-webkit-scrollbar { width: 6px; }
-        .overflow-y-auto::-webkit-scrollbar-track { background: #f1f5f9; }
-        .overflow-y-auto::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type="number"] { -moz-appearance: textfield; }
-        .modal-blur { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        button { -webkit-tap-highlight-color: transparent; }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
+
+        .overflow-y-auto::-webkit-scrollbar {
+            width: 6px;
         }
-        .logo-float { animation: float 3s ease-in-out infinite; }
-        
+
+        .overflow-y-auto::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .modal-blur {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .logo-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
         .notification-toast {
             position: fixed !important;
             top: 80px !important;
@@ -66,6 +111,7 @@
         }
     </style>
 </head>
+
 <body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
 
@@ -73,12 +119,12 @@
         import React, { useState, useEffect, useCallback } from 'react';
         import { createRoot } from 'react-dom/client';
         import { initializeApp } from 'firebase/app';
-        import { 
-          getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, addDoc, deleteDoc, writeBatch, getDocs, query, where, getDocsFromServer 
+        import {
+            getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, addDoc, deleteDoc, writeBatch, getDocs, query, where, getDocsFromServer
         } from 'firebase/firestore';
         import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-        import { 
-          X, Search, Plus, Trash2, WifiOff, Mail, MailOpen, AlertTriangle, LogOut, Send, CheckCircle, Edit3, RefreshCw
+        import {
+            X, Search, Plus, Trash2, WifiOff, Mail, MailOpen, AlertTriangle, LogOut, Send, CheckCircle, Edit3, RefreshCw
         } from 'lucide-react';
 
         const firebaseConfig = {
@@ -167,11 +213,11 @@
 
         function GlobalNotification({ message, type = 'success' }) {
             if (!message) return null;
-            
-            const bgColor = type === 'success' ? 'bg-emerald-500' : 
-                           type === 'warning' ? 'bg-amber-500' : 
-                           type === 'error' ? 'bg-red-500' : 'bg-blue-500';
-            
+
+            const bgColor = type === 'success' ? 'bg-emerald-500' :
+                type === 'warning' ? 'bg-amber-500' :
+                    type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+
             return (
                 <div className="notification-toast">
                     <div className={`px-8 py-6 ${bgColor} text-white rounded-3xl shadow-2xl font-black text-sm uppercase text-center max-w-md animate-pulse flex items-center gap-3`}>
@@ -184,25 +230,25 @@
 
         function App() {
             const [user, setUser] = useState(null);
-            const [inventory, setInventory] = useState(INITIAL_INVENTORY.map(i => ({...i, firebaseId: i.id, stockDomicilio: 50})));
+            const [inventory, setInventory] = useState(INITIAL_INVENTORY.map(i => ({ ...i, firebaseId: i.id, stockDomicilio: 50 })));
             const [nurses, setNurses] = useState(INITIAL_NURSES);
-            
+
             const [authLoading, setAuthLoading] = useState(true);
             const [notification, setNotification] = useState(null);
             const [notificationType, setNotificationType] = useState('success');
             const [search, setSearch] = useState('');
             const [activeNurse, setActiveNurse] = useState(null);
-            
+
             const [sessionUsage, setSessionUsage] = useState({});
             const [sessionRestocks, setSessionRestocks] = useState({});
-            
+
             const [loginForm, setLoginForm] = useState({ id: '', pin: '' });
             const [loginError, setLoginError] = useState('');
             const [showShiftEnd, setShowShiftEnd] = useState(false);
             const [showAddSupply, setShowAddSupply] = useState(false);
             const [showNurseModal, setShowNurseModal] = useState(false);
             const [showForgotPin, setShowForgotPin] = useState(false);
-            const [view, setView] = useState('login'); 
+            const [view, setView] = useState('login');
             const [setupData, setSetupData] = useState({ fullName: '', newPin: '', confirmPin: '' });
             const [newSupply, setNewSupply] = useState({ name: '', unit: 'UNID', cat: 'Farmacia', min: 1 });
             const [nurseEditor, setNurseEditor] = useState({ id: '', name: '', email: '', pin: '', mode: 'add' });
@@ -212,7 +258,7 @@
             const [selectedMessage, setSelectedMessage] = useState(null);
             const [debugLog, setDebugLog] = useState([]);
             const [showDebug, setShowDebug] = useState(false);
-            
+
             // FIX #1: Estado para editar insumo
             const [showEditSupply, setShowEditSupply] = useState(false);
             const [editSupplyData, setEditSupplyData] = useState({ firebaseId: '', name: '', unit: 'UNID', cat: 'Farmacia', min: 1, stockDomicilio: 0 });
@@ -236,8 +282,8 @@
                         console.log('🔐 Iniciando autenticación anónima...');
                         const userCredential = await signInAnonymously(auth);
                         console.log('✅ Autenticación exitosa. UID:', userCredential.user.uid);
-                    } catch (e) { 
-                        console.error("❌ Auth error:", e.code, e.message); 
+                    } catch (e) {
+                        console.error("❌ Auth error:", e.code, e.message);
                         setOfflineMode(true);
                     }
                 };
@@ -259,8 +305,8 @@
                     return;
                 }
                 console.log('📡 Conectando a Firebase Firestore...');
-                const rootRef = doc(db, 'artifacts', APP_ID_DB, 'public', 'data'); 
-                
+                const rootRef = doc(db, 'artifacts', APP_ID_DB, 'public', 'data');
+
                 const unsubInv = onSnapshot(collection(rootRef, 'inventory_stable'), (snap) => {
                     console.log('📦 Inventario recibido:', snap.docs.length, 'items');
                     if (!snap.empty) {
@@ -275,11 +321,11 @@
                             .catch((e) => {
                                 console.error('❌ Error inicializando inventario:', e.code, e.message);
                                 setOfflineMode(true);
-                            }); 
+                            });
                     }
-                }, (err) => { 
+                }, (err) => {
                     console.error('❌ Error escuchando inventario:', err.code, err.message);
-                    setOfflineMode(true); 
+                    setOfflineMode(true);
                 });
 
                 const unsubNurse = onSnapshot(collection(rootRef, 'nurses'), (snap) => {
@@ -301,15 +347,15 @@
                 const unsubMessages = onSnapshot(collection(rootRef, 'messages'), (snap) => {
                     console.log('✉️ Mensajes recibidos:', snap.docs.length);
                     if (!snap.empty) {
-                        const loadedMessages = snap.docs.map(d => ({ ...d.data(), id: d.id })).sort((a, b) => 
+                        const loadedMessages = snap.docs.map(d => ({ ...d.data(), id: d.id })).sort((a, b) =>
                             new Date(b.timestamp) - new Date(a.timestamp)
                         );
                         setMessages(loadedMessages);
-                        
+
                         // FIX #5: Auto-borrar mensajes de enfermeros mayores a 7 días
                         const oneWeekAgo = new Date();
                         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-                        
+
                         loadedMessages.forEach(msg => {
                             if (msg.to === 'Enfermeros' && new Date(msg.timestamp) < oneWeekAgo) {
                                 deleteDoc(doc(db, 'artifacts', APP_ID_DB, 'public', 'data', 'messages', msg.id))
@@ -356,35 +402,35 @@
                         setSetupData({ fullName: nurse.name, newPin: '', confirmPin: '' });
                     } else if (!nurse.profileComplete) {
                         setView('setup_profile');
-                    } else { 
-                        setSessionUsage({}); 
+                    } else {
+                        setSessionUsage({});
                         setSessionRestocks({});
-                        setView('portal'); 
+                        setView('portal');
                     }
-                } else { 
-                    setLoginError('PIN Incorrecto.'); 
+                } else {
+                    setLoginError('PIN Incorrecto.');
                 }
             };
 
             const handleForgotPin = async () => {
                 addDebugLog("=== SOLICITUD DE AYUDA ===");
-                
+
                 if (!loginForm.id) {
                     setShowForgotPin(false);
                     showNotification('⚠️ Primero seleccione su nombre', 'warning');
                     return;
                 }
-                
+
                 const nurse = nurses.find(n => n.id === loginForm.id);
-                
+
                 if (nurse && nurse.id !== ADMIN_ID) {
                     const updated = { ...nurse, needsReset: true };
                     setNurses(prev => prev.map(n => n.id === nurse.id ? updated : n));
                     setShowForgotPin(false);
                     showNotification('✓ AYUDA SOLICITADA - El administrador reseteará tu PIN', 'success', 4000);
-                    
+
                     updateLocalAndRemote('nurses', nurse.id, { needsReset: true });
-                    
+
                     setTimeout(() => setLoginForm({ id: '', pin: '' }), 4000);
                 } else {
                     setShowForgotPin(false);
@@ -394,13 +440,13 @@
             // FIX #3: Notificación clara de reseteo exitoso
             const handleResetNurseToDefault = async (nurse) => {
                 addDebugLog("=== RESETEO DE PIN ===");
-                
+
                 const updated = { ...nurse, pin: '0000', needsReset: true };
                 setNurses(prev => prev.map(n => n.id === nurse.id ? updated : n));
-                
+
                 // Mostrar notificación MUY CLARA
                 showNotification(`✓ RESETEO EXITOSO - PIN de ${nurse.name} ahora es 0000`, 'success', 5000);
-                
+
                 await updateLocalAndRemote('nurses', nurse.id, { pin: '0000', needsReset: true });
             };
 
@@ -408,35 +454,35 @@
             const handleDefineNewPin = async (e) => {
                 e.preventDefault();
                 addDebugLog("=== DEFINIR NUEVO PIN ===");
-                
+
                 if (setupData.newPin !== setupData.confirmPin) {
                     showNotification('⚠️ Los PINs no coinciden', 'warning');
                     return;
                 }
-                
+
                 if (setupData.newPin.length < 4) {
                     showNotification('⚠️ El PIN debe tener al menos 4 dígitos', 'warning');
                     return;
                 }
-                
-                const newPinData = { 
-                    pin: setupData.newPin, 
+
+                const newPinData = {
+                    pin: setupData.newPin,
                     needsReset: false,
                     profileComplete: true
                 };
-                
+
                 // Guardar en Firebase PRIMERO y esperar
                 const success = await updateLocalAndRemote('nurses', activeNurse.id, newPinData);
-                
+
                 if (success) {
                     addDebugLog("✓ PIN guardado en Firebase correctamente");
-                    
+
                     const updatedNurse = { ...activeNurse, ...newPinData };
                     setNurses(prev => prev.map(n => n.id === activeNurse.id ? updatedNurse : n));
                     setActiveNurse(updatedNurse);
-                    
+
                     showNotification('✅ NUEVO PIN HABILITADO - Ingresando al portal...', 'success', 3000);
-                    
+
                     setTimeout(() => {
                         setSessionUsage({});
                         setSessionRestocks({});
@@ -450,39 +496,39 @@
 
             const handleCompleteProfile = async (e) => {
                 e.preventDefault();
-                
+
                 if (!setupData.fullName.trim()) {
                     showNotification('⚠️ El nombre es obligatorio', 'warning');
                     return;
                 }
-                
+
                 if (!setupData.newPin || setupData.newPin.length < 4) {
                     showNotification('⚠️ El PIN debe tener al menos 4 dígitos', 'warning');
                     return;
                 }
-                
+
                 if (setupData.newPin !== setupData.confirmPin) {
                     showNotification('⚠️ Los PINs no coinciden', 'warning');
                     return;
                 }
-                
-                const updated = { 
+
+                const updated = {
                     name: setupData.fullName.toUpperCase(),
                     pin: setupData.newPin,
                     profileComplete: true,
                     needsReset: false
                 };
-                
+
                 // Guardar en Firebase PRIMERO y esperar confirmación
                 showNotification('⏳ Guardando perfil...', 'info', 2000);
                 const success = await updateLocalAndRemote('nurses', activeNurse.id, updated);
-                
+
                 if (success) {
                     // Solo actualizar UI si Firebase confirmó
                     setActiveNurse({ ...activeNurse, ...updated });
                     setNurses(prev => prev.map(n => n.id === activeNurse.id ? { ...n, ...updated } : n));
                     showNotification('✅ PERFIL Y PIN GUARDADOS', 'success');
-                    
+
                     setTimeout(() => {
                         setSessionUsage({});
                         setSessionRestocks({});
@@ -496,19 +542,19 @@
 
             const handleRegisterUsage = async (item) => {
                 const isIncontable = UNIDADES_INCONTABLES.includes(item.unit);
-                
-                setSessionUsage(prev => ({ 
-                    ...prev, 
-                    [item.name]: { 
-                        uses: (prev[item.name]?.uses || 0) + 1, 
-                        unit: item.unit 
-                    } 
+
+                setSessionUsage(prev => ({
+                    ...prev,
+                    [item.name]: {
+                        uses: (prev[item.name]?.uses || 0) + 1,
+                        unit: item.unit
+                    }
                 }));
-                
+
                 if (!isIncontable) {
                     if (item.stockDomicilio > 0) {
                         const newStock = item.stockDomicilio - 1;
-                        setInventory(prev => prev.map(i => 
+                        setInventory(prev => prev.map(i =>
                             i.firebaseId === item.firebaseId ? { ...i, stockDomicilio: newStock } : i
                         ));
                         await updateLocalAndRemote('inventory_stable', item.firebaseId, { stockDomicilio: newStock });
@@ -519,32 +565,32 @@
             const handleMarkHalfEmpty = async (item) => {
                 const currentHalves = sessionRestocks[item.name]?.halves || 0;
                 const newHalves = currentHalves + 1;
-                
+
                 if (newHalves >= 2) {
                     if (item.stockDomicilio > 0) {
                         const newStock = item.stockDomicilio - 1;
-                        setInventory(prev => prev.map(i => 
+                        setInventory(prev => prev.map(i =>
                             i.firebaseId === item.firebaseId ? { ...i, stockDomicilio: newStock } : i
                         ));
                         await updateLocalAndRemote('inventory_stable', item.firebaseId, { stockDomicilio: newStock });
                     }
-                    
-                    setSessionUsage(prev => ({ 
-                        ...prev, 
-                        [item.name]: { uses: (prev[item.name]?.uses || 0) + 1, unit: item.unit } 
+
+                    setSessionUsage(prev => ({
+                        ...prev,
+                        [item.name]: { uses: (prev[item.name]?.uses || 0) + 1, unit: item.unit }
                     }));
-                    
+
                     setSessionRestocks(prev => {
-                        const updated = {...prev};
+                        const updated = { ...prev };
                         delete updated[item.name];
                         return updated;
                     });
-                    
+
                     showNotification('✓ Unidad completa registrada (2 mitades)', 'success');
                 } else {
-                    setSessionRestocks(prev => ({ 
-                        ...prev, 
-                        [item.name]: { unit: item.unit, halves: newHalves } 
+                    setSessionRestocks(prev => ({
+                        ...prev,
+                        [item.name]: { unit: item.unit, halves: newHalves }
                     }));
                     showNotification('⚠️ Primera mitad registrada (falta 1 más)', 'warning');
                 }
@@ -552,26 +598,28 @@
 
             const handleAdminUpdate = async (item, field, newValue) => {
                 let val = newValue === '' ? '' : newValue;
-                
+
                 if (val !== '') {
                     val = parseInt(val);
                     if (isNaN(val) || val < 0) return;
                 }
-                
+
                 if (field === 'stockDomicilio' && val !== '') {
                     const diff = val - (item.stockDomicilio || 0);
                     if (diff > 0) {
-                        setSessionUsage(prev => ({ 
-                            ...prev, 
-                            [item.name]: { uses: (prev[item.name]?.uses || 0) + diff, unit: item.unit } 
+                        // FIX: Guardar SOLO la cantidad repuesta en esta acción, no acumular
+                        // Esto hace que el informe muestre exactamente lo que se repuso
+                        setSessionUsage(prev => ({
+                            ...prev,
+                            [item.name]: { uses: diff, unit: item.unit }
                         }));
                     }
                 }
-                
-                setInventory(prev => prev.map(i => 
+
+                setInventory(prev => prev.map(i =>
                     i.firebaseId === item.firebaseId ? { ...i, [field]: val === '' ? 0 : val } : i
                 ));
-                
+
                 if (val !== '') {
                     await updateLocalAndRemote('inventory_stable', item.firebaseId, { [field]: val });
                 }
@@ -596,7 +644,7 @@
                     showNotification('⚠️ El nombre es obligatorio', 'warning');
                     return;
                 }
-                
+
                 const updatedItem = {
                     name: editSupplyData.name.toUpperCase(),
                     unit: editSupplyData.unit,
@@ -604,22 +652,22 @@
                     min: editSupplyData.min,
                     stockDomicilio: editSupplyData.stockDomicilio
                 };
-                
+
                 // Cerrar modal PRIMERO
                 setShowEditSupply(false);
-                
+
                 // Actualizar UI local inmediatamente
-                setInventory(prev => prev.map(i => 
+                setInventory(prev => prev.map(i =>
                     i.firebaseId === editSupplyData.firebaseId ? { ...i, ...updatedItem } : i
                 ).sort((a, b) => a.name.localeCompare(b.name)));
-                
+
                 showNotification('✓ MATERIAL ACTUALIZADO', 'success');
-                
+
                 // Guardar en Firebase en background
                 try {
                     await updateLocalAndRemote('inventory_stable', editSupplyData.firebaseId, updatedItem);
                     console.log('✓ Material guardado en Firebase');
-                } catch(e) {
+                } catch (e) {
                     console.error('Error guardando en Firebase:', e);
                 }
             };
@@ -629,7 +677,7 @@
                     const isAdmin = activeNurse?.id === ADMIN_ID;
                     const dateStr = new Date().toLocaleDateString();
                     const timeStr = new Date().toLocaleTimeString();
-                    
+
                     const hasUsage = Object.keys(sessionUsage).length > 0;
                     const hasRestocks = Object.keys(sessionRestocks).length > 0;
 
@@ -639,7 +687,7 @@
                     let body = '';
                     let from = '';
                     let to = '';
-                    
+
                     if (isAdmin) {
                         const list = Object.entries(sessionUsage)
                             .map(([n, d]) => `- ${n.toUpperCase()}: +${d.uses} ${d.unit}`)
@@ -650,26 +698,26 @@
                         to = 'Enfermeros';
                     } else {
                         // Guardar log de turno (no bloqueante)
-                        const shiftData = { 
-                            nurse: activeNurse?.name || 'Enfermero', 
-                            timestamp: new Date().toISOString(), 
+                        const shiftData = {
+                            nurse: activeNurse?.name || 'Enfermero',
+                            timestamp: new Date().toISOString(),
                             itemsUsed: sessionUsage,
                             restocks: sessionRestocks
                         };
-                        
+
                         // Ejecutar en background sin bloquear
                         addDoc(collection(db, 'artifacts', APP_ID_DB, 'public', 'data', 'logs_turnos'), shiftData)
                             .then(() => console.log('✓ Log de turno guardado'))
                             .catch(e => console.log('Log turno error:', e));
-                        
+
                         const usageList = Object.entries(sessionUsage)
                             .map(([n, d]) => `- ${n.toUpperCase()}: ${d.uses} ${UNIDADES_INCONTABLES.includes(d.unit) ? 'USOS' : d.unit}`)
                             .join('\n');
-                        
+
                         const restockList = Object.entries(sessionRestocks)
                             .map(([n, data]) => `- ${n.toUpperCase()}: ${data?.halves || 1}/2 MITADES`)
                             .join('\n');
-                        
+
                         subject = `GUARDIA: ${activeNurse?.name || 'Enfermero'} - ${dateStr}`;
                         body = `REPORTE DE GUARDIA\n\nEnfermero: ${activeNurse?.name || 'Enfermero'}\nFecha: ${dateStr}\nHora: ${timeStr}\n`;
                         if (hasUsage) body += `\n------- CONSUMOS -------\n${usageList}\n`;
@@ -677,7 +725,7 @@
                         from = activeNurse?.name || 'Enfermero';
                         to = 'Administrador';
                     }
-                    
+
                     // Crear el mensaje
                     const messageData = {
                         from: from,
@@ -687,13 +735,13 @@
                         timestamp: new Date().toISOString(),
                         read: false
                     };
-                    
+
                     console.log('📧 Enviando mensaje:', messageData);
-                    
+
                     await addDoc(collection(db, 'artifacts', APP_ID_DB, 'public', 'data', 'messages'), messageData);
                     console.log('✓ Mensaje enviado correctamente');
                     return true;
-                } catch(error) {
+                } catch (error) {
                     console.error("❌ Error enviando reporte:", error);
                     return false;
                 }
@@ -702,9 +750,9 @@
             const confirmAndExit = async () => {
                 setShowShiftEnd(false);
                 showNotification('⏳ Enviando reporte...', 'info', 2000);
-                
+
                 const success = await sendReportToAdmin();
-                
+
                 if (success) {
                     showNotification('✓ Reporte enviado correctamente', 'success');
                     setTimeout(() => resetSession(), 2000);
@@ -714,11 +762,11 @@
                 }
             };
 
-            const resetSession = () => { 
-                setActiveNurse(null); 
-                setView('login'); 
-                setShowShiftEnd(false); 
-                setSessionUsage({}); 
+            const resetSession = () => {
+                setActiveNurse(null);
+                setView('login');
+                setShowShiftEnd(false);
+                setSessionUsage({});
                 setSessionRestocks({});
                 setLoginForm({ id: '', pin: '' });
             };
@@ -729,23 +777,23 @@
                     showNotification('⚠️ El nombre es obligatorio', 'warning');
                     return;
                 }
-                
+
                 const id = Date.now().toString();
-                const newItem = { 
-                    ...newSupply, 
-                    id, 
-                    firebaseId: id, 
+                const newItem = {
+                    ...newSupply,
+                    id,
+                    firebaseId: id,
                     stockDomicilio: 50,
                     name: newSupply.name.toUpperCase()
                 };
-                
+
                 setInventory(prev => [...prev, newItem].sort((a, b) => a.name.localeCompare(b.name)));
                 await updateLocalAndRemote('inventory_stable', id, newItem);
-                
+
                 // Cerrar modal primero
                 setShowAddSupply(false);
                 setNewSupply({ name: '', unit: 'UNID', cat: 'Farmacia', min: 1 });
-                
+
                 // Mostrar notificación clara
                 showNotification('✓ NUEVO MATERIAL CREADO', 'success', 3000);
             };
@@ -757,27 +805,27 @@
                     showNotification('⚠️ Todos los campos son obligatorios', 'warning');
                     return;
                 }
-                
+
                 const id = nurseEditor.id || nurseEditor.name.toLowerCase().replace(/\s/g, '_');
-                const newNurseData = { 
-                    id, 
-                    name: nurseEditor.name.toUpperCase(), 
-                    email: nurseEditor.email.toLowerCase(), 
-                    pin: nurseEditor.pin, 
+                const newNurseData = {
+                    id,
+                    name: nurseEditor.name.toUpperCase(),
+                    email: nurseEditor.email.toLowerCase(),
+                    pin: nurseEditor.pin,
                     profileComplete: true,
                     needsReset: false
                 };
-                
+
                 // Guardar en Firebase PRIMERO
                 const success = await updateLocalAndRemote('nurses', id, newNurseData);
-                
+
                 if (success) {
                     setNurses(prev => {
                         const exists = prev.find(n => n.id === id);
                         if (exists) return prev.map(n => n.id === id ? newNurseData : n);
                         return [...prev, newNurseData];
                     });
-                    
+
                     setShowNurseModal(false);
                     showNotification('✓ PERSONAL GUARDADO CORRECTAMENTE', 'success');
                 } else {
@@ -786,49 +834,49 @@
             };
 
             const deleteNurse = async (id) => {
-                if(!window.confirm("¿Eliminar acceso?")) return;
-                setNurses(prev => prev.filter(n => n.id !== id)); 
-                try { 
+                if (!window.confirm("¿Eliminar acceso?")) return;
+                setNurses(prev => prev.filter(n => n.id !== id));
+                try {
                     await deleteDoc(doc(db, 'artifacts', APP_ID_DB, 'public', 'data', 'nurses', id));
                     showNotification('✓ Personal eliminado', 'success');
-                } catch(e){ 
-                    setOfflineMode(true); 
+                } catch (e) {
+                    setOfflineMode(true);
                 }
             };
 
             // Forzar que un enfermero vuelva a registrarse
             const forceReRegister = async (nurse) => {
-                if(!window.confirm(`¿Forzar re-registro de ${nurse.name}? Deberá ingresar nombre y PIN nuevo.`)) return;
-                
-                const updated = { 
-                    ...nurse, 
-                    profileComplete: false, 
+                if (!window.confirm(`¿Forzar re-registro de ${nurse.name}? Deberá ingresar nombre y PIN nuevo.`)) return;
+
+                const updated = {
+                    ...nurse,
+                    profileComplete: false,
                     pin: '0000',
-                    needsReset: false 
+                    needsReset: false
                 };
-                
+
                 setNurses(prev => prev.map(n => n.id === nurse.id ? updated : n));
-                
+
                 try {
-                    await updateLocalAndRemote('nurses', nurse.id, { 
-                        profileComplete: false, 
+                    await updateLocalAndRemote('nurses', nurse.id, {
+                        profileComplete: false,
                         pin: '0000',
-                        needsReset: false 
+                        needsReset: false
                     });
                     showNotification(`✓ ${nurse.name} debe re-registrarse con PIN 0000`, 'success');
-                } catch(e) {
+                } catch (e) {
                     showNotification('❌ Error', 'error');
                 }
             };
 
             const deleteInventoryItem = async (firebaseId) => {
-                if(!window.confirm("¿Confirma eliminar este material?")) return;
-                
+                if (!window.confirm("¿Confirma eliminar este material?")) return;
+
                 try {
                     setInventory(prev => prev.filter(i => i.firebaseId !== firebaseId));
                     await deleteDoc(doc(db, 'artifacts', APP_ID_DB, 'public', 'data', 'inventory_stable', firebaseId));
                     showNotification('✓ Insumo borrado', 'success');
-                } catch(e){ 
+                } catch (e) {
                     setOfflineMode(true);
                 }
             };
@@ -836,20 +884,20 @@
             const markAsRead = async (messageId) => {
                 try {
                     await updateDoc(doc(db, 'artifacts', APP_ID_DB, 'public', 'data', 'messages', messageId), { read: true });
-                } catch(e) {}
+                } catch (e) { }
             };
 
             // NUEVO: Función para refrescar mensajes desde el servidor
             const refreshMessages = async () => {
                 console.log('🔄 Forzando actualización de mensajes desde servidor...');
                 showNotification('🔄 Actualizando mensajes...', 'info', 2000);
-                
+
                 try {
                     const messagesRef = collection(db, 'artifacts', APP_ID_DB, 'public', 'data', 'messages');
                     const snapshot = await getDocsFromServer(messagesRef);
-                    
+
                     if (!snapshot.empty) {
-                        const loadedMessages = snapshot.docs.map(d => ({ ...d.data(), id: d.id })).sort((a, b) => 
+                        const loadedMessages = snapshot.docs.map(d => ({ ...d.data(), id: d.id })).sort((a, b) =>
                             new Date(b.timestamp) - new Date(a.timestamp)
                         );
                         setMessages(loadedMessages);
@@ -860,7 +908,7 @@
                         showNotification('📭 No hay mensajes', 'info');
                     }
                     setOfflineMode(false);
-                } catch(e) {
+                } catch (e) {
                     console.error('❌ Error actualizando mensajes:', e);
                     showNotification('❌ Error de conexión', 'error');
                     setOfflineMode(true);
@@ -870,17 +918,17 @@
             // NUEVO: Función para refrescar datos de enfermeros desde el servidor  
             const refreshNurses = async () => {
                 console.log('🔄 Forzando actualización de enfermeros desde servidor...');
-                
+
                 try {
                     const nursesRef = collection(db, 'artifacts', APP_ID_DB, 'public', 'data', 'nurses');
                     const snapshot = await getDocsFromServer(nursesRef);
-                    
+
                     if (!snapshot.empty) {
                         const loadedNurses = snapshot.docs.map(d => ({ ...d.data(), firebaseId: d.id }));
                         setNurses(loadedNurses);
                         console.log('✅ Enfermeros actualizados:', loadedNurses.length);
                     }
-                } catch(e) {
+                } catch (e) {
                     console.error('❌ Error actualizando enfermeros:', e);
                 }
             };
@@ -891,13 +939,13 @@
                 setMessages(prev => prev.filter(m => m.id !== messageId));
                 setSelectedMessage(null);
                 showNotification('✓ Mensaje eliminado', 'success');
-                
+
                 // Luego intentar eliminar de Firebase en background
                 try {
                     const messageRef = doc(db, 'artifacts', APP_ID_DB, 'public', 'data', 'messages', messageId);
                     await deleteDoc(messageRef);
                     console.log('✓ Mensaje eliminado de Firebase:', messageId);
-                } catch(e) {
+                } catch (e) {
                     console.error('Error eliminando de Firebase:', e);
                     // El mensaje ya se eliminó de la UI, no molestamos al usuario
                 }
@@ -923,25 +971,25 @@
 
             const filteredInventory = inventory.filter(i => i.name.toLowerCase().includes(search.toLowerCase()));
             const nursesNeedingReset = nurses.filter(n => n.needsReset && n.id !== ADMIN_ID);
-            
+
             const filteredMessages = activeNurse ? messages.filter(msg => {
                 if (activeNurse.id === ADMIN_ID) return msg.to === 'Administrador';
                 return msg.to === 'Enfermeros';
             }) : [];
-            
+
             const unreadMessages = filteredMessages.filter(m => !m.read).length;
 
             return (
                 <div className="min-h-screen bg-slate-50 pb-24 font-sans relative">
                     <GlobalNotification message={notification} type={notificationType} />
-                    
+
                     {offlineMode && (
                         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[190] px-4 py-3 bg-red-500 text-white rounded-2xl shadow-lg flex items-center gap-2 animate-pulse">
                             <WifiOff className="w-4 h-4" />
                             <span className="text-[10px] font-black uppercase">⚠️ SIN CONEXIÓN A FIREBASE - Los datos NO se sincronizan</span>
                         </div>
                     )}
-                    
+
                     {!offlineMode && user && (
                         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[190] px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full shadow-sm flex items-center gap-1 opacity-70">
                             <span className="text-[8px] font-black uppercase">✓ Conectado</span>
@@ -957,13 +1005,13 @@
                                             <svg width="90" height="90" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <defs>
                                                     <linearGradient id="shieldGradient" x1="50" y1="10" x2="50" y2="90" gradientUnits="userSpaceOnUse">
-                                                        <stop stopColor="#3b82f6"/>
-                                                        <stop offset="1" stopColor="#1d4ed8"/>
+                                                        <stop stopColor="#3b82f6" />
+                                                        <stop offset="1" stopColor="#1d4ed8" />
                                                     </linearGradient>
                                                 </defs>
-                                                <path d="M50 10C30 10 15 15 15 15V55C15 75 50 90 50 90C50 90 85 75 85 55V15C85 15 70 10 50 10Z" fill="url(#shieldGradient)" stroke="#1e40af" strokeWidth="2"/>
-                                                <rect x="43" y="28" width="14" height="40" rx="3" fill="white"/>
-                                                <rect x="33" y="40" width="34" height="14" rx="3" fill="white"/>
+                                                <path d="M50 10C30 10 15 15 15 15V55C15 75 50 90 50 90C50 90 85 75 85 55V15C85 15 70 10 50 10Z" fill="url(#shieldGradient)" stroke="#1e40af" strokeWidth="2" />
+                                                <rect x="43" y="28" width="14" height="40" rx="3" fill="white" />
+                                                <rect x="33" y="40" width="34" height="14" rx="3" fill="white" />
                                             </svg>
                                         </div>
                                     </div>
@@ -971,16 +1019,16 @@
                                     <h2 className="text-xl font-bold text-blue-600 tracking-wide">NURSING</h2>
                                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-3">Portal de Enfermería Domiciliaria</p>
                                 </div>
-                                
+
                                 <form onSubmit={handleLogin} className="space-y-5">
                                     <div className="relative">
-                                        <select className="w-full p-5 pr-12 rounded-2xl border-2 border-slate-200 font-semibold text-slate-600 text-sm bg-white outline-none focus:border-blue-500 appearance-none cursor-pointer" value={loginForm.id} onChange={e => setLoginForm({...loginForm, id: e.target.value})}>
+                                        <select className="w-full p-5 pr-12 rounded-2xl border-2 border-slate-200 font-semibold text-slate-600 text-sm bg-white outline-none focus:border-blue-500 appearance-none cursor-pointer" value={loginForm.id} onChange={e => setLoginForm({ ...loginForm, id: e.target.value })}>
                                             <option value="">¿QUIÉN SOS?</option>
                                             {nurses.map(n => <option key={n.id} value={n.id}>{String(n.name)}</option>)}
                                         </select>
                                         <svg className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
-                                    <input type="password" placeholder="P I N" className="w-full p-5 rounded-2xl border-2 border-slate-200 text-center font-bold text-2xl tracking-[0.4em] outline-none focus:border-blue-500 bg-white" value={loginForm.pin} onChange={e => setLoginForm({...loginForm, pin: e.target.value})} />
+                                    <input type="password" placeholder="P I N" className="w-full p-5 rounded-2xl border-2 border-slate-200 text-center font-bold text-2xl tracking-[0.4em] outline-none focus:border-blue-500 bg-white" value={loginForm.pin} onChange={e => setLoginForm({ ...loginForm, pin: e.target.value })} />
                                     {loginError && <p className="text-red-500 text-xs font-bold text-center animate-pulse">{loginError}</p>}
                                     <button className="w-full p-5 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full text-sm uppercase tracking-wider shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all">Ingresar al Portal</button>
                                     <div className="text-center pt-2">
@@ -996,7 +1044,7 @@
                             <div className="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl">
                                 <h3 className="text-[11px] font-black uppercase text-slate-800 mb-2">¿Olvidó su PIN?</h3>
                                 <p className="text-[10px] font-black uppercase text-slate-500 mb-6 leading-relaxed">
-                                    {loginForm.id 
+                                    {loginForm.id
                                         ? `Solicitará ayuda para resetear el PIN de ${nurses.find(n => n.id === loginForm.id)?.name}.`
                                         : 'Primero seleccione su nombre en la pantalla de login.'}
                                 </p>
@@ -1016,8 +1064,8 @@
                                 <h2 className="font-black uppercase text-sm mb-4">DEFINE TU NUEVO PIN</h2>
                                 <p className="text-[9px] font-bold text-slate-400 uppercase mb-6">Crea tu nuevo PIN personal de acceso.</p>
                                 <form onSubmit={handleDefineNewPin} className="space-y-4">
-                                    <input required type="password" className="w-full p-5 rounded-2xl bg-slate-50 text-center font-black text-2xl tracking-[0.5em] outline-none" placeholder="NUEVO PIN" maxLength={6} value={setupData.newPin} onChange={e => setSetupData({...setupData, newPin: e.target.value})} />
-                                    <input required type="password" className="w-full p-5 rounded-2xl bg-slate-50 text-center font-black text-2xl tracking-[0.5em] outline-none" placeholder="CONFIRMAR PIN" maxLength={6} value={setupData.confirmPin} onChange={e => setSetupData({...setupData, confirmPin: e.target.value})} />
+                                    <input required type="password" className="w-full p-5 rounded-2xl bg-slate-50 text-center font-black text-2xl tracking-[0.5em] outline-none" placeholder="NUEVO PIN" maxLength={6} value={setupData.newPin} onChange={e => setSetupData({ ...setupData, newPin: e.target.value })} />
+                                    <input required type="password" className="w-full p-5 rounded-2xl bg-slate-50 text-center font-black text-2xl tracking-[0.5em] outline-none" placeholder="CONFIRMAR PIN" maxLength={6} value={setupData.confirmPin} onChange={e => setSetupData({ ...setupData, confirmPin: e.target.value })} />
                                     <button className="w-full p-6 bg-emerald-500 text-white font-black rounded-3xl uppercase text-[10px] shadow-xl active:scale-95 transition-all">Habilitar mi PIN</button>
                                 </form>
                             </div>
@@ -1030,9 +1078,9 @@
                                 <h2 className="font-black uppercase text-sm mb-4">REGISTRO INICIAL</h2>
                                 <p className="text-[9px] font-bold text-slate-400 uppercase mb-6">Complete su nombre y elija un PIN personal.</p>
                                 <form onSubmit={handleCompleteProfile} className="space-y-4">
-                                    <input required type="text" className="w-full p-5 rounded-2xl bg-slate-50 font-bold uppercase text-[10px] outline-none" placeholder="NOMBRE Y APELLIDO COMPLETO" value={setupData.fullName} onChange={e => setSetupData({...setupData, fullName: e.target.value})} />
-                                    <input required type="password" className="w-full p-5 rounded-2xl bg-slate-50 text-center font-black text-2xl tracking-[0.5em] outline-none" placeholder="NUEVO PIN" maxLength={6} value={setupData.newPin} onChange={e => setSetupData({...setupData, newPin: e.target.value})} />
-                                    <input required type="password" className="w-full p-5 rounded-2xl bg-slate-50 text-center font-black text-2xl tracking-[0.5em] outline-none" placeholder="CONFIRMAR PIN" maxLength={6} value={setupData.confirmPin} onChange={e => setSetupData({...setupData, confirmPin: e.target.value})} />
+                                    <input required type="text" className="w-full p-5 rounded-2xl bg-slate-50 font-bold uppercase text-[10px] outline-none" placeholder="NOMBRE Y APELLIDO COMPLETO" value={setupData.fullName} onChange={e => setSetupData({ ...setupData, fullName: e.target.value })} />
+                                    <input required type="password" className="w-full p-5 rounded-2xl bg-slate-50 text-center font-black text-2xl tracking-[0.5em] outline-none" placeholder="NUEVO PIN" maxLength={6} value={setupData.newPin} onChange={e => setSetupData({ ...setupData, newPin: e.target.value })} />
+                                    <input required type="password" className="w-full p-5 rounded-2xl bg-slate-50 text-center font-black text-2xl tracking-[0.5em] outline-none" placeholder="CONFIRMAR PIN" maxLength={6} value={setupData.confirmPin} onChange={e => setSetupData({ ...setupData, confirmPin: e.target.value })} />
                                     <button className="w-full p-6 bg-emerald-500 text-white font-black rounded-3xl uppercase text-[10px] shadow-xl active:scale-95 transition-all">Guardar y Comenzar</button>
                                 </form>
                             </div>
@@ -1051,7 +1099,7 @@
                                         <button onClick={() => activeNurse ? setView('portal') : setView('login')} className="bg-slate-100 p-2 rounded-xl hover:bg-slate-200"><X className="w-4 h-4" /></button>
                                     </div>
                                 </div>
-                                
+
                                 {nursesNeedingReset.length > 0 && (
                                     <div className="mb-4 shrink-0">
                                         <p className="text-[9px] font-black text-red-600 uppercase mb-2 flex items-center gap-1">
@@ -1072,7 +1120,7 @@
                                         ))}
                                     </div>
                                 )}
-                                
+
                                 <div className="space-y-4 mb-6 overflow-y-auto flex-1 pr-2 border-t border-b border-slate-100 py-4">
                                     {nurses.map(n => (
                                         <div key={n.id} className="p-5 bg-white rounded-3xl border border-slate-100 shadow-sm hover:border-blue-200 transition-all">
@@ -1142,7 +1190,7 @@
 
                             <main className="w-full max-w-7xl mx-auto p-4 md:p-8">
                                 <div className="relative mb-6">
-                                    <input type="text" placeholder="BUSCAR MATERIAL..." className="w-full p-5 pl-12 rounded-3xl shadow-sm border-none font-bold uppercase text-[10px] outline-none focus:ring-4 focus:ring-blue-100 bg-white" onChange={e => setSearch(e.target.value)}/>
+                                    <input type="text" placeholder="BUSCAR MATERIAL..." className="w-full p-5 pl-12 rounded-3xl shadow-sm border-none font-bold uppercase text-[10px] outline-none focus:ring-4 focus:ring-blue-100 bg-white" onChange={e => setSearch(e.target.value)} />
                                     <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1231,7 +1279,7 @@
                                         <button onClick={() => { setShowMessages(false); setSelectedMessage(null); }} className="bg-slate-100 p-2 rounded-xl active:bg-slate-200"><X className="w-4 h-4" /></button>
                                     </div>
                                 </div>
-                                
+
                                 {!selectedMessage ? (
                                     <div className="overflow-y-auto flex-1">
                                         {filteredMessages.length === 0 ? (
@@ -1290,9 +1338,9 @@
                             <div className="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl">
                                 <h2 className="font-black uppercase text-sm mb-10 text-center">PERFIL PERSONAL</h2>
                                 <form onSubmit={saveNurse} className="space-y-4">
-                                    <input required type="text" placeholder="NOMBRE COMPLETO" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-bold text-[11px] uppercase outline-none focus:border-blue-500" value={nurseEditor.name} onChange={e => setNurseEditor({...nurseEditor, name: e.target.value.toUpperCase()})} />
-                                    <input type="email" placeholder="EMAIL (OPCIONAL)" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-bold text-[11px] outline-none" value={nurseEditor.email} onChange={e => setNurseEditor({...nurseEditor, email: e.target.value.toLowerCase()})} />
-                                    <input required type="text" placeholder="PIN" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-black text-center text-xl tracking-[0.6em] outline-none" maxLength={6} value={nurseEditor.pin} onChange={e => setNurseEditor({...nurseEditor, pin: e.target.value})} />
+                                    <input required type="text" placeholder="NOMBRE COMPLETO" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-bold text-[11px] uppercase outline-none focus:border-blue-500" value={nurseEditor.name} onChange={e => setNurseEditor({ ...nurseEditor, name: e.target.value.toUpperCase() })} />
+                                    <input type="email" placeholder="EMAIL (OPCIONAL)" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-bold text-[11px] outline-none" value={nurseEditor.email} onChange={e => setNurseEditor({ ...nurseEditor, email: e.target.value.toLowerCase() })} />
+                                    <input required type="text" placeholder="PIN" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-black text-center text-xl tracking-[0.6em] outline-none" maxLength={6} value={nurseEditor.pin} onChange={e => setNurseEditor({ ...nurseEditor, pin: e.target.value })} />
                                     <div className="flex gap-3 pt-6">
                                         <button type="button" onClick={() => setShowNurseModal(false)} className="flex-1 p-5 bg-slate-50 text-slate-400 font-black rounded-[2rem] uppercase text-[9px] active:scale-95">Atrás</button>
                                         <button type="submit" className="flex-1 p-5 bg-blue-600 text-white font-black rounded-[2rem] uppercase text-[9px] shadow-2xl active:scale-95">Guardar</button>
@@ -1307,12 +1355,12 @@
                             <div className="bg-white w-full max-w-sm rounded-[3.5rem] p-10 shadow-2xl">
                                 <h2 className="font-black uppercase text-sm mb-10 text-center text-slate-800">NUEVO MATERIAL</h2>
                                 <div className="space-y-4">
-                                    <input type="text" placeholder="NOMBRE DEL MATERIAL" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-bold text-[10px] uppercase outline-none focus:border-blue-500" value={newSupply.name} onChange={e => setNewSupply({...newSupply, name: e.target.value.toUpperCase()})} />
+                                    <input type="text" placeholder="NOMBRE DEL MATERIAL" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-bold text-[10px] uppercase outline-none focus:border-blue-500" value={newSupply.name} onChange={e => setNewSupply({ ...newSupply, name: e.target.value.toUpperCase() })} />
                                     <div className="grid grid-cols-2 gap-3">
-                                        <select className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-black text-[9px] uppercase outline-none" value={newSupply.unit} onChange={e => setNewSupply({...newSupply, unit: e.target.value})}>
+                                        <select className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-black text-[9px] uppercase outline-none" value={newSupply.unit} onChange={e => setNewSupply({ ...newSupply, unit: e.target.value })}>
                                             {UNIT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                         </select>
-                                        <input type="number" placeholder="MÍNIMO" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-100 font-black text-[9px] outline-none" value={newSupply.min} onChange={e => setNewSupply({...newSupply, min: parseInt(e.target.value) || 0})} />
+                                        <input type="number" placeholder="MÍNIMO" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-100 font-black text-[9px] outline-none" value={newSupply.min} onChange={e => setNewSupply({ ...newSupply, min: parseInt(e.target.value) || 0 })} />
                                     </div>
                                     <div className="flex gap-3 pt-6">
                                         <button onClick={() => setShowAddSupply(false)} className="flex-1 p-5 bg-slate-100 text-slate-400 font-black rounded-[2rem] uppercase text-[9px] active:scale-95">Atrás</button>
@@ -1331,22 +1379,22 @@
                                 <div className="space-y-4">
                                     <div>
                                         <label className="text-[8px] font-black text-slate-400 uppercase mb-1 block">Nombre</label>
-                                        <input type="text" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-bold text-[10px] uppercase outline-none focus:border-blue-500" value={editSupplyData.name} onChange={e => setEditSupplyData({...editSupplyData, name: e.target.value.toUpperCase()})} />
+                                        <input type="text" className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-bold text-[10px] uppercase outline-none focus:border-blue-500" value={editSupplyData.name} onChange={e => setEditSupplyData({ ...editSupplyData, name: e.target.value.toUpperCase() })} />
                                     </div>
                                     <div>
                                         <label className="text-[8px] font-black text-slate-400 uppercase mb-1 block">Presentación</label>
-                                        <select className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-black text-[9px] uppercase outline-none" value={editSupplyData.unit} onChange={e => setEditSupplyData({...editSupplyData, unit: e.target.value})}>
+                                        <select className="w-full p-5 rounded-[2rem] bg-slate-50 border-2 border-slate-50 font-black text-[9px] uppercase outline-none" value={editSupplyData.unit} onChange={e => setEditSupplyData({ ...editSupplyData, unit: e.target.value })}>
                                             {UNIT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                         </select>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
                                             <label className="text-[8px] font-black text-slate-400 uppercase mb-1 block">Mínimo</label>
-                                            <input type="number" className="w-full p-5 rounded-[2rem] bg-amber-50 border-2 border-amber-100 font-black text-[9px] outline-none text-center" value={editSupplyData.min} onChange={e => setEditSupplyData({...editSupplyData, min: parseInt(e.target.value) || 0})} />
+                                            <input type="number" className="w-full p-5 rounded-[2rem] bg-amber-50 border-2 border-amber-100 font-black text-[9px] outline-none text-center" value={editSupplyData.min} onChange={e => setEditSupplyData({ ...editSupplyData, min: parseInt(e.target.value) || 0 })} />
                                         </div>
                                         <div>
                                             <label className="text-[8px] font-black text-slate-400 uppercase mb-1 block">Stock</label>
-                                            <input type="number" className="w-full p-5 rounded-[2rem] bg-blue-50 border-2 border-blue-100 font-black text-[9px] outline-none text-center" value={editSupplyData.stockDomicilio} onChange={e => setEditSupplyData({...editSupplyData, stockDomicilio: parseInt(e.target.value) || 0})} />
+                                            <input type="number" className="w-full p-5 rounded-[2rem] bg-blue-50 border-2 border-blue-100 font-black text-[9px] outline-none text-center" value={editSupplyData.stockDomicilio} onChange={e => setEditSupplyData({ ...editSupplyData, stockDomicilio: parseInt(e.target.value) || 0 })} />
                                         </div>
                                     </div>
                                     <div className="flex gap-3 pt-6">
@@ -1425,15 +1473,15 @@
                 navigator.serviceWorker.register('/sw.js')
                     .then(reg => {
                         console.log('✓ PWA Service Worker activo');
-                        
+
                         // Buscar actualizaciones cada vez que se abre la app
                         reg.update();
-                        
+
                         // Escuchar cuando hay una nueva versión lista
                         reg.addEventListener('updatefound', () => {
                             const newWorker = reg.installing;
                             console.log('🔄 Descargando nueva versión...');
-                            
+
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'activated') {
                                     console.log('✅ Nueva versión lista, recargando...');
@@ -1444,7 +1492,7 @@
                     })
                     .catch(err => console.log('SW Error:', err));
             });
-            
+
             // Escuchar mensajes del Service Worker
             navigator.serviceWorker.addEventListener('message', (event) => {
                 if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
@@ -1452,7 +1500,7 @@
                     window.location.reload();
                 }
             });
-            
+
             // Recargar cuando el SW toma control
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 console.log('🔄 Nuevo Service Worker activo, recargando...');
@@ -1461,4 +1509,5 @@
         }
     </script>
 </body>
+
 </html>
