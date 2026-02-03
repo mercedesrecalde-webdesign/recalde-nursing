@@ -263,6 +263,11 @@
             const [showEditSupply, setShowEditSupply] = useState(false);
             const [editSupplyData, setEditSupplyData] = useState({ firebaseId: '', name: '', unit: 'UNID', cat: 'Farmacia', min: 1, stockDomicilio: 0 });
 
+            // Estado para modal de ingreso de stock
+            const [showIngresoStock, setShowIngresoStock] = useState(false);
+            const [ingresoStockItem, setIngresoStockItem] = useState(null);
+            const [cantidadIngreso, setCantidadIngreso] = useState('');
+
             const showNotification = useCallback((message, type = 'success', duration = 3500) => {
                 console.log('📢 NOTIFICACIÓN:', message);
                 setNotification(message);
@@ -672,6 +677,48 @@
                 }
             };
 
+            // Función para abrir modal de ingreso de stock
+            const openIngresoStock = (item) => {
+                setIngresoStockItem(item);
+                setCantidadIngreso('');
+                setShowIngresoStock(true);
+            };
+
+            // Función para procesar el ingreso de stock - SUMA al existente
+            const handleIngresoStock = async () => {
+                if (!cantidadIngreso || parseInt(cantidadIngreso) <= 0) {
+                    showNotification('⚠️ Ingrese una cantidad válida', 'warning');
+                    return;
+                }
+
+                const cantidad = parseInt(cantidadIngreso);
+                const nuevoStock = (ingresoStockItem.stockDomicilio || 0) + cantidad;
+
+                // Actualizar UI local
+                setInventory(prev => prev.map(i =>
+                    i.firebaseId === ingresoStockItem.firebaseId ? { ...i, stockDomicilio: nuevoStock } : i
+                ));
+
+                // Registrar SOLO la cantidad que se repuso para el mensaje
+                setSessionUsage(prev => ({
+                    ...prev,
+                    [ingresoStockItem.name]: {
+                        uses: (prev[ingresoStockItem.name]?.uses || 0) + cantidad,
+                        unit: ingresoStockItem.unit
+                    }
+                }));
+
+                // Cerrar modal
+                setShowIngresoStock(false);
+                setCantidadIngreso('');
+                setIngresoStockItem(null);
+
+                showNotification(`✓ +${cantidad} ${ingresoStockItem.unit} agregados al stock`, 'success');
+
+                // Guardar en Firebase
+                await updateLocalAndRemote('inventory_stable', ingresoStockItem.firebaseId, { stockDomicilio: nuevoStock });
+            };
+
             const sendReportToAdmin = async () => {
                 try {
                     const isAdmin = activeNurse?.id === ADMIN_ID;
@@ -689,11 +736,23 @@
                     let to = '';
 
                     if (isAdmin) {
-                        const list = Object.entries(sessionUsage)
-                            .map(([n, d]) => `- ${n.toUpperCase()}: +${d.uses} ${d.unit}`)
-                            .join('\n');
-                        subject = `REPOSICIÓN: Insumos - ${dateStr}`;
-                        body = `SE HAN RECARGADO LOS SIGUIENTES MATERIALES:\n\n${list}\n\nFecha: ${dateStr} ${timeStr}`;
+                        // FIX: Formato de listado con saltos de línea claros
+                        const listItems = Object.entries(sessionUsage)
+                            .map(([n, d]) => `• ${n.toUpperCase()}: +${d.uses} ${d.unit}`);
+
+                        subject = `📦 REPOSICIÓN DE STOCK - ${dateStr}`;
+                        body = `══════════════════════════════
+📦 REPOSICIÓN DE MATERIALES
+══════════════════════════════
+
+Se han repuesto los siguientes insumos:
+
+${listItems.join('\r\n')}
+
+══════════════════════════════
+📅 Fecha: ${dateStr}
+🕐 Hora: ${timeStr}
+══════════════════════════════`;
                         from = activeNurse?.name || 'Administrador';
                         to = 'Enfermeros';
                     } else {
@@ -1155,36 +1214,38 @@
 
                     {view === 'portal' && (
                         <>
-                            <header className={`border-b px-4 py-4 sticky top-0 z-40 flex justify-between items-center shadow-sm ${activeNurse?.id === ADMIN_ID ? 'bg-blue-600 text-white' : 'bg-white'}`}>
-                                <div className="flex flex-col">
-                                    <span className={`text-[10px] font-black uppercase tracking-tighter ${activeNurse?.id === ADMIN_ID ? 'text-blue-100' : 'text-slate-900'}`}>RECALDE_NURSING</span>
-                                    <span className={`text-[8px] font-bold uppercase ${activeNurse?.id === ADMIN_ID ? 'text-blue-100' : 'text-slate-400'}`}>
-                                        {activeNurse?.id === ADMIN_ID ? 'MODO ADMINISTRADOR' : String(activeNurse?.name || '')}
-                                    </span>
-                                </div>
-                                <div className="flex gap-2 flex-wrap justify-end">
-                                    {activeNurse?.id === ADMIN_ID && (
-                                        <>
-                                            <button onClick={() => { setShowMessages(true); refreshMessages(); }} className="bg-blue-800 text-[8px] font-black px-3 py-2 rounded-2xl uppercase border border-blue-400 relative">
+                            <header className={`border-b px-3 py-3 sticky top-0 z-40 shadow-sm ${activeNurse?.id === ADMIN_ID ? 'bg-blue-600 text-white' : 'bg-white'}`}>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex flex-col shrink-0">
+                                        <span className={`text-[10px] font-black uppercase tracking-tighter ${activeNurse?.id === ADMIN_ID ? 'text-blue-100' : 'text-slate-900'}`}>RECALDE_NURSING</span>
+                                        <span className={`text-[8px] font-bold uppercase ${activeNurse?.id === ADMIN_ID ? 'text-blue-100' : 'text-slate-400'}`}>
+                                            {activeNurse?.id === ADMIN_ID ? 'ADMIN' : String(activeNurse?.name || '')}
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-1 items-center flex-wrap justify-end">
+                                        {activeNurse?.id === ADMIN_ID && (
+                                            <>
+                                                <button onClick={() => { setShowMessages(true); refreshMessages(); }} className="bg-blue-800 text-[8px] font-black px-2 py-1.5 rounded-xl uppercase border border-blue-400 relative">
+                                                    Mensajes
+                                                    {unreadMessages > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[7px] font-black w-4 h-4 rounded-full flex items-center justify-center">{unreadMessages}</span>}
+                                                </button>
+                                                <button onClick={() => setView('manage_nurses')} className="bg-blue-800 text-[8px] font-black px-2 py-1.5 rounded-xl uppercase border border-blue-400">Personal</button>
+                                                <button onClick={() => setShowAddSupply(true)} className="bg-blue-500 text-[8px] font-black px-2 py-1.5 rounded-xl uppercase border border-blue-400">Material</button>
+                                            </>
+                                        )}
+                                        {activeNurse?.id !== ADMIN_ID && (
+                                            <button onClick={() => { setShowMessages(true); refreshMessages(); }} className="bg-slate-700 text-white text-[8px] font-black px-2 py-1.5 rounded-xl uppercase relative">
                                                 Mensajes
-                                                {unreadMessages > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center">{unreadMessages}</span>}
+                                                {unreadMessages > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[7px] font-black w-4 h-4 rounded-full flex items-center justify-center">{unreadMessages}</span>}
                                             </button>
-                                            <button onClick={() => setView('manage_nurses')} className="bg-blue-800 text-[8px] font-black px-3 py-2 rounded-2xl uppercase border border-blue-400">Personal</button>
-                                            <button onClick={() => setShowAddSupply(true)} className="bg-blue-500 text-[8px] font-black px-3 py-2 rounded-2xl uppercase border border-blue-400">Material</button>
-                                        </>
-                                    )}
-                                    {activeNurse?.id !== ADMIN_ID && (
-                                        <button onClick={() => { setShowMessages(true); refreshMessages(); }} className="bg-slate-700 text-white text-[8px] font-black px-3 py-2 rounded-2xl uppercase relative">
-                                            Mensajes
-                                            {unreadMessages > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center">{unreadMessages}</span>}
+                                        )}
+                                        <button onClick={() => setShowShiftEnd(true)} className={`text-[8px] font-black px-2 py-1.5 rounded-xl uppercase flex items-center gap-1 ${activeNurse?.id === ADMIN_ID ? 'bg-white text-blue-600' : 'bg-emerald-500 text-white'}`}>
+                                            <Send className="w-3 h-3" /> Enviar
                                         </button>
-                                    )}
-                                    <button onClick={() => resetSession()} className="bg-red-500 text-white text-[8px] font-black px-3 py-2 rounded-2xl uppercase shadow-lg active:scale-95 flex items-center gap-1">
-                                        <LogOut className="w-3 h-3" /> Salir
-                                    </button>
-                                    <button onClick={() => setShowShiftEnd(true)} className={`text-[8px] font-black px-4 py-2 rounded-2xl uppercase shadow-lg active:scale-95 flex items-center gap-1 ${activeNurse?.id === ADMIN_ID ? 'bg-white text-blue-600' : 'bg-slate-900 text-white'}`}>
-                                        <Send className="w-3 h-3" /> Enviar
-                                    </button>
+                                        <button onClick={() => resetSession()} className="bg-red-500 text-white text-[8px] font-black px-2 py-1.5 rounded-xl uppercase flex items-center gap-1">
+                                            <LogOut className="w-3 h-3" /> Salir
+                                        </button>
+                                    </div>
                                 </div>
                             </header>
 
@@ -1216,21 +1277,21 @@
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div className="text-right min-w-[120px]">
+                                                    <div className="text-right">
                                                         {isAdmin ? (
-                                                            <div className="flex flex-col gap-2 min-w-[120px]">
-                                                                <div className="flex flex-col text-blue-600">
-                                                                    <span className="text-[7px] font-black uppercase mb-1">Stock:</span>
-                                                                    <div className="flex items-center gap-1">
-                                                                        <button onClick={() => handleAdminUpdate(item, 'stockDomicilio', (item.stockDomicilio || 0) - 1)} className="w-8 h-8 bg-slate-100 rounded-xl font-black shadow-sm flex items-center justify-center active:bg-slate-200">-</button>
-                                                                        <input type="number" className="w-14 p-2 bg-blue-50 border-2 border-blue-100 rounded-xl text-center font-black text-blue-700 text-xs outline-none" value={item.stockDomicilio} onChange={(e) => handleAdminUpdate(item, 'stockDomicilio', e.target.value)} onFocus={(e) => e.target.select()} />
-                                                                        <button onClick={() => handleAdminUpdate(item, 'stockDomicilio', (item.stockDomicilio || 0) + 1)} className="w-8 h-8 bg-slate-100 rounded-xl font-black shadow-sm flex items-center justify-center active:bg-slate-200">+</button>
-                                                                    </div>
+                                                            <div className="flex flex-col gap-2">
+                                                                {/* Botón INGRESAR STOCK */}
+                                                                <button onClick={() => openIngresoStock(item)} className="bg-blue-600 text-white px-4 py-3 rounded-2xl font-black text-[9px] uppercase shadow-lg active:scale-95 flex items-center gap-2 justify-center">
+                                                                    <RefreshCw className="w-4 h-4" /> Ingresar Stock
+                                                                </button>
+                                                                {/* Corrección manual */}
+                                                                <div className="text-[7px] font-black text-slate-400 uppercase">Corrección Manual</div>
+                                                                <div className="flex items-center gap-1 justify-center">
+                                                                    <button onClick={() => handleAdminUpdate(item, 'stockDomicilio', (item.stockDomicilio || 0) - 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black shadow-sm flex items-center justify-center active:bg-slate-200 text-sm">-</button>
+                                                                    <span className="font-black text-blue-700 text-lg min-w-[40px] text-center">{item.stockDomicilio}</span>
+                                                                    <button onClick={() => handleAdminUpdate(item, 'stockDomicilio', (item.stockDomicilio || 0) + 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black shadow-sm flex items-center justify-center active:bg-slate-200 text-sm">+</button>
                                                                 </div>
-                                                                <div className="flex flex-col text-amber-600">
-                                                                    <span className="text-[7px] font-black uppercase mb-1">Mínimo:</span>
-                                                                    <input type="number" className="w-full p-2 bg-amber-50 border-2 border-amber-100 rounded-xl text-center font-black text-amber-700 text-xs outline-none" value={item.min} onChange={(e) => handleAdminUpdate(item, 'min', e.target.value)} onFocus={(e) => e.target.select()} />
-                                                                </div>
+                                                                <div className="text-[7px] font-black text-amber-500 uppercase">Mín: {item.min}</div>
                                                             </div>
                                                         ) : (
                                                             <div className="flex flex-col items-end">
@@ -1401,6 +1462,44 @@
                                         <button onClick={() => setShowEditSupply(false)} className="flex-1 p-5 bg-slate-100 text-slate-400 font-black rounded-[2rem] uppercase text-[9px] active:scale-95">Cancelar</button>
                                         <button onClick={handleSaveEditSupply} className="flex-1 p-5 bg-emerald-500 text-white font-black rounded-[2rem] uppercase text-[9px] shadow-lg active:scale-95">Guardar</button>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Modal para INGRESAR STOCK */}
+                    {showIngresoStock && ingresoStockItem && (
+                        <div className="fixed inset-0 bg-slate-900/95 modal-blur z-[100] flex items-center justify-center p-6">
+                            <div className="bg-white w-full max-w-sm rounded-[3.5rem] p-10 shadow-2xl">
+                                <h2 className="font-black uppercase text-sm mb-4 text-center text-slate-800">INGRESAR STOCK</h2>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase text-center mb-8">{ingresoStockItem.name}</p>
+
+                                <div className="bg-blue-50 rounded-3xl p-6 mb-6">
+                                    <p className="text-[8px] font-black text-blue-400 uppercase mb-2 text-center">Stock Actual</p>
+                                    <p className="text-4xl font-black text-blue-600 text-center">{ingresoStockItem.stockDomicilio}</p>
+                                    <p className="text-[8px] font-black text-blue-400 uppercase text-center">{ingresoStockItem.unit}</p>
+                                </div>
+
+                                <div className="mb-8">
+                                    <label className="text-[9px] font-black text-slate-500 uppercase mb-2 block text-center">¿Cuántos repones?</label>
+                                    <input
+                                        type="number"
+                                        className="w-full p-6 rounded-[2rem] bg-emerald-50 border-4 border-emerald-200 font-black text-3xl text-emerald-700 text-center outline-none focus:border-emerald-400"
+                                        placeholder="0"
+                                        value={cantidadIngreso}
+                                        onChange={e => setCantidadIngreso(e.target.value)}
+                                        autoFocus
+                                    />
+                                    {cantidadIngreso && parseInt(cantidadIngreso) > 0 && (
+                                        <p className="text-[10px] font-black text-emerald-600 uppercase text-center mt-3">
+                                            Nuevo stock: {(ingresoStockItem.stockDomicilio || 0) + parseInt(cantidadIngreso)} {ingresoStockItem.unit}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button onClick={() => { setShowIngresoStock(false); setCantidadIngreso(''); setIngresoStockItem(null); }} className="flex-1 p-5 bg-slate-100 text-slate-400 font-black rounded-[2rem] uppercase text-[9px] active:scale-95">Cancelar</button>
+                                    <button onClick={handleIngresoStock} className="flex-1 p-5 bg-emerald-500 text-white font-black rounded-[2rem] uppercase text-[9px] shadow-lg active:scale-95">+ Agregar</button>
                                 </div>
                             </div>
                         </div>
