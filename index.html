@@ -141,6 +141,100 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // ═══════════════════════════════════════════════════════════════
+        // 🔄 SYNC BIDIRECCIONAL — Conexión a Care Connect
+        // ═══════════════════════════════════════════════════════════════
+        // Care Connect maneja:
+        //   stockDomicilio = depto del hermano (mismo que Nursing)
+        //   stockOsef = depósito en casa de la hermana (stockAnterior + delivered)
+        //
+        // Flujo: cuando Nursing cambia stock, se refleja en Care Connect
+        // ═══════════════════════════════════════════════════════════════
+        const careConnectConfig = {
+            apiKey: "AIzaSyBUZbbsxy5QI5LVwVOsfi0SOPK0YMPcV-4",
+            authDomain: "recalde-care-connect.firebaseapp.com",
+            projectId: "recalde-care-connect",
+            storageBucket: "recalde-care-connect.firebasestorage.app",
+            messagingSenderId: "286633589646",
+            appId: "1:286633589646:web:de0553ddd89b33eb7d02df"
+        };
+        const ccApp = initializeApp(careConnectConfig, 'careConnect');
+        const ccDb = getFirestore(ccApp);
+
+        // Cache: nombre del insumo → { firebaseId, stockAnterior, delivered, stockOsef, stockDomicilio }
+        let ccInventoryCache = {};
+        let ccSyncReady = false;
+
+        const loadCareConnectCache = async () => {
+            try {
+                const snap = await getDocs(collection(ccDb, 'care_connect_inventory'));
+                ccInventoryCache = {};
+                snap.docs.forEach(d => {
+                    const data = d.data();
+                    ccInventoryCache[data.name] = { id: d.id, ...data };
+                });
+                ccSyncReady = true;
+                console.log('🔗 Sync Care Connect listo:', Object.keys(ccInventoryCache).length, 'insumos');
+            } catch (e) {
+                console.warn('⚠️ No se pudo cargar Care Connect:', e.message);
+            }
+        };
+        loadCareConnectCache();
+
+        // Refrescar cache cada 60 segundos para tener datos frescos del depósito
+        setInterval(() => { if (ccSyncReady) loadCareConnectCache(); }, 60000);
+
+        // 🔽 SYNC USO: enfermero usa → baja stockDomicilio en Care Connect
+        const syncCCUso = async (itemName, newStockDomicilio) => {
+            if (!ccSyncReady) return;
+            const cc = ccInventoryCache[itemName];
+            if (!cc) { console.log('🔄 Sync: no encontrado en CC:', itemName); return; }
+            try {
+                await updateDoc(doc(ccDb, 'care_connect_inventory', cc.id), { stockDomicilio: newStockDomicilio });
+                cc.stockDomicilio = newStockDomicilio;
+                console.log(`🔄 Sync USO → CC: ${itemName} domicilio=${newStockDomicilio}`);
+            } catch (e) { console.warn('⚠️ Sync CC falló:', e.message); }
+        };
+
+        // 🔼 SYNC REPOSICIÓN: admin ingresa stock → sube domicilio Y baja depósito en CC
+        // Hace lo mismo que el botón "Bajar" de Care Connect (FIFO)
+        const syncCCReposicion = async (itemName, cantidad) => {
+            if (!ccSyncReady || cantidad <= 0) return;
+            const cc = ccInventoryCache[itemName];
+            if (!cc) { console.log('🔄 Sync: no encontrado en CC:', itemName); return; }
+            try {
+                // Refrescar datos frescos de este item antes de operar
+                const freshSnap = await getDocs(collection(ccDb, 'care_connect_inventory'));
+                const freshDoc = freshSnap.docs.find(d => d.data().name === itemName);
+                if (!freshDoc) return;
+                const fresh = freshDoc.data();
+
+                let newAnt = fresh.stockAnterior || 0;
+                let newDel = fresh.delivered || 0;
+                let newDom = fresh.stockDomicilio || 0;
+
+                // Bajar FIFO: primero de stockAnterior, luego de delivered
+                for (let i = 0; i < cantidad; i++) {
+                    if (newAnt > 0) newAnt--;
+                    else if (newDel > 0) newDel--;
+                    newDom++;
+                }
+
+                const updateObj = {
+                    stockDomicilio: newDom,
+                    stockAnterior: newAnt,
+                    delivered: newDel,
+                    stockOsef: newAnt + newDel
+                };
+
+                await updateDoc(doc(ccDb, 'care_connect_inventory', freshDoc.id), updateObj);
+                // Actualizar cache local
+                Object.assign(ccInventoryCache[itemName], updateObj, { id: freshDoc.id });
+                console.log(`🔄 Sync REPO → CC: ${itemName} domicilio=${newDom} depósito=${newAnt + newDel}`);
+            } catch (e) { console.warn('⚠️ Sync CC reposición falló:', e.message); }
+        };
+        // ═══════════════════════════════════════════════════════════════
+
         const APP_ID_DB = 'recalde-care-final-v1';
         const ADMIN_ID = "admin_test";
         const ADMIN_PIN = "1234";
@@ -563,6 +657,7 @@
                             i.firebaseId === item.firebaseId ? { ...i, stockDomicilio: newStock } : i
                         ));
                         await updateLocalAndRemote('inventory_stable', item.firebaseId, { stockDomicilio: newStock });
+                        syncCCUso(item.name, newStock); // 🔄 Sync uso → CC
                     }
                 }
             };
@@ -578,6 +673,7 @@
                             i.firebaseId === item.firebaseId ? { ...i, stockDomicilio: newStock } : i
                         ));
                         await updateLocalAndRemote('inventory_stable', item.firebaseId, { stockDomicilio: newStock });
+                        syncCCUso(item.name, newStock); // 🔄 Sync uso → CC
                     }
 
                     setSessionUsage(prev => ({
@@ -627,6 +723,15 @@
 
                 if (val !== '') {
                     await updateLocalAndRemote('inventory_stable', item.firebaseId, { [field]: val });
+                    // 🔄 Sync a Care Connect
+                    if (field === 'stockDomicilio') {
+                        const diff = val - (item.stockDomicilio || 0);
+                        if (diff > 0) {
+                            syncCCReposicion(item.name, diff); // Sube stock → baja depósito
+                        } else if (diff < 0) {
+                            syncCCUso(item.name, val); // Baja stock → solo actualiza domicilio
+                        }
+                    }
                 }
             };
 
@@ -650,6 +755,10 @@
                     return;
                 }
 
+                // Capturar stock anterior ANTES de actualizar
+                const oldItem = inventory.find(i => i.firebaseId === editSupplyData.firebaseId);
+                const oldStock = oldItem ? (oldItem.stockDomicilio || 0) : 0;
+
                 const updatedItem = {
                     name: editSupplyData.name.toUpperCase(),
                     unit: editSupplyData.unit,
@@ -671,6 +780,13 @@
                 // Guardar en Firebase en background
                 try {
                     await updateLocalAndRemote('inventory_stable', editSupplyData.firebaseId, updatedItem);
+                    // 🔄 Sync a Care Connect
+                    const diff = updatedItem.stockDomicilio - oldStock;
+                    if (diff > 0) {
+                        syncCCReposicion(updatedItem.name, diff);
+                    } else if (diff < 0) {
+                        syncCCUso(updatedItem.name, updatedItem.stockDomicilio);
+                    }
                     console.log('✓ Material guardado en Firebase');
                 } catch (e) {
                     console.error('Error guardando en Firebase:', e);
@@ -693,6 +809,7 @@
 
                 const cantidad = parseInt(cantidadIngreso);
                 const nuevoStock = (ingresoStockItem.stockDomicilio || 0) + cantidad;
+                const itemName = ingresoStockItem.name; // Capturar antes de null
 
                 // Actualizar UI local
                 setInventory(prev => prev.map(i =>
@@ -717,6 +834,8 @@
 
                 // Guardar en Firebase
                 await updateLocalAndRemote('inventory_stable', ingresoStockItem.firebaseId, { stockDomicilio: nuevoStock });
+                // 🔄 Sync reposición → CC: sube domicilio Y baja depósito
+                syncCCReposicion(itemName, cantidad);
             };
 
             const sendReportToAdmin = async () => {
